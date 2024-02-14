@@ -36,5 +36,33 @@ namespace MoviceAPI.Controllers
             return Ok(genre);
 
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id , [FromBody] CreateGenreDto dto)
+        {
+            var genre = await _db.Genres.SingleOrDefaultAsync(x => x.Id == id);
+
+            if (genre == null) 
+                return NotFound($"No genre was found with ID : {id}");
+
+            genre.Name = dto.Name;
+            _db.SaveChanges();
+
+            return Ok(genre);
+        }
+
+        [HttpDelete("{id}")]
+           public async Task<IActionResult> Delete(int id)
+        {
+            var genre = await _db.Genres.SingleOrDefaultAsync(x => x.Id == id);
+
+            if (genre == null)
+                return NotFound($"No genre was found with ID : {id}");
+
+            _db.Remove(genre);
+            _db.SaveChanges();
+
+            return Ok(genre);
+        }
     }
 }
