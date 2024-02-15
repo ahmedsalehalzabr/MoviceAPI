@@ -23,10 +23,42 @@ namespace MoviceAPI.Controllers
             _db = db;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var movies = await _db.Movies.Include(m => m.Genre).Select(m => new MoviesDetelesDto
+            {
+                Id = m.Id,
+                GenreId = m.GenreId,
+                GenreName = m.Genre.Name,
+                Poster = m.Poster,
+                Rate = m.Rate,
+                Storeline = m.Storeline,
+                Title = m.Title,
+                Year = m.Year,
+
+            }).ToListAsync();
+
+            return Ok(movies);
+        }
+
+        [HttpGet("{id}")]
+
+        public async Task<IActionResult> GetByIdAsync(int id)
+        {
+            var movie = _db.Movies.FindAsync(id); 
+
+            if(movie == null)
+                return NotFound();
+
+      
+            return Ok(movie);
+        }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAny([FromForm] MovieDto dto)
+        public async Task<IActionResult> CreateAny([FromForm] MovieDto dto)   
         {
+            //التحكم في حجم الصورة
             if (dto.Poster == null)
                 return BadRequest("Poster is required!");
 
@@ -39,7 +71,7 @@ namespace MoviceAPI.Controllers
             var isValidGenre = await _db.Genres.AnyAsync(x => x.Id == dto.GenreId);
 
             if (!isValidGenre)
-                return BadRequest("Invalid genere ID!");
+                return BadRequest("Invalid genere ID!"); 
 
             using var dataStream = new MemoryStream();
             await dto.Poster.CopyToAsync(dataStream);
